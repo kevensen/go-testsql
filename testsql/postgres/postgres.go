@@ -1,3 +1,5 @@
+// Package postgres contains the basic definition for connection to a postgres
+// based container
 package postgres
 
 import (
@@ -36,6 +38,7 @@ func NewDefaultConnector(ctx context.Context) *Connector {
 		databaseUser:     defaultUser,
 		databasePassword: defaultPassword,
 		containerImage:   defaultImage,
+		containerName:    defaultContainerName,
 		additionalArgs: map[string]string{
 			"sslmode": "disable",
 		},

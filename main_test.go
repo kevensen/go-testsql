@@ -17,10 +17,10 @@ var (
 
 func TestSomeSQL(t *testing.T) {
 	ctx := context.Background()
-	postgresConnector, cleanup := tsqlp.New(ctx, t, psqltest.NewDefaultConnector(ctx))
+	testDB, cleanup := tsqlp.New(ctx, t, psqltest.NewDefaultConnector(ctx))
 	defer cleanup()
 	var err error
-	db, err = gorm.Open(postgres.Open(postgresConnector.DataSourceName()), &gorm.Config{})
+	db, err = gorm.Open(postgres.Open(testDB.DataSourceName()), &gorm.Config{})
 
 	if err != nil {
 		t.Fatalf("failed to connect database: %v", err)

@@ -1,3 +1,5 @@
+// Package testsql contains the primary mechanism for connecting to a database
+// container for unit or other functional testing.
 package testsql
 
 import (
@@ -38,8 +40,14 @@ func New(ctx context.Context, t *testing.T, dbConn Database) (*TestConnector, fu
 		dbConn: dbConn,
 	}
 
-	containerID := tsqlcon.StartContainer(ctx, t, cli, dbConn.ContainerConfig(), dbConn.ContainerImage(), dbConn.ContainerName())
-	testConn.host = tsqlcon.ContainerIP(ctx, t, cli, containerID)
+	containerID, err := tsqlcon.StartContainer(ctx, cli, dbConn.ContainerConfig(), dbConn.ContainerImage(), dbConn.ContainerName())
+	if err != nil {
+		t.Fatal(err)
+	}
+	testConn.host, err = tsqlcon.ContainerIP(ctx, cli, containerID)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	operation := func() error {
 		return testConnection(testConn.host, dbConn.Port()) // or an error
