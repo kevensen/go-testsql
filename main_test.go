@@ -5,7 +5,8 @@ import (
 	"os"
 	"testing"
 
-	tsqlp "github.com/kevensen/go-testsql/testsql/postgres"
+	tsqlp "github.com/kevensen/go-testsql/testsql"
+	psqltest "github.com/kevensen/go-testsql/testsql/postgres"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ var (
 
 func TestSomeSQL(t *testing.T) {
 	ctx := context.Background()
-	postgresConnector, cleanup := tsqlp.NewDefaultConnector(ctx, t)
+	postgresConnector, cleanup := tsqlp.New(ctx, t, psqltest.NewDefaultConnector(ctx))
 	defer cleanup()
 	var err error
 	db, err = gorm.Open(postgres.Open(postgresConnector.DataSourceName()), &gorm.Config{})
