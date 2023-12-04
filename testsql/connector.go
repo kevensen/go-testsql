@@ -34,7 +34,6 @@ func New(ctx context.Context, t *testing.T, dbConn Database) (*TestConnector, fu
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer cli.Close()
 
 	testConn := &TestConnector{
 		dbConn: dbConn,
@@ -63,6 +62,7 @@ func New(ctx context.Context, t *testing.T, dbConn Database) (*TestConnector, fu
 		if err != nil {
 			t.Fatal(err)
 		}
+		cli.Close()
 	}
 	return testConn, cleanup
 
@@ -73,9 +73,10 @@ func (tc *TestConnector) DataSourceName() string {
 }
 
 func testConnection(host string, port int) error {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
+	endpoint := fmt.Sprintf("%s:%d", host, port)
+	conn, err := net.Dial("tcp", endpoint)
 	if err != nil {
-		return err
+		return fmt.Errorf("connection test failed to %q: %v", endpoint, err)
 
 	}
 	conn.Close()
