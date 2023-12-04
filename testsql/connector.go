@@ -17,6 +17,7 @@ import (
 
 type Database interface {
 	ContainerConfig() *container.Config
+	HostConfig() *container.HostConfig
 	DataSourceName(string) string
 	ContainerImage() string
 	ContainerName() string
@@ -39,7 +40,7 @@ func New(ctx context.Context, t *testing.T, dbConn Database) (*TestConnector, fu
 		dbConn: dbConn,
 	}
 
-	containerID, err := tsqlcon.StartContainer(ctx, cli, dbConn.ContainerConfig(), dbConn.ContainerImage(), dbConn.ContainerName())
+	containerID, err := tsqlcon.StartContainer(ctx, cli, dbConn.ContainerConfig(), dbConn.HostConfig(), dbConn.ContainerImage(), dbConn.ContainerName())
 	if err != nil {
 		t.Fatal(err)
 	}

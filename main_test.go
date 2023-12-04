@@ -17,7 +17,7 @@ var (
 
 func TestSomeSQL(t *testing.T) {
 	ctx := context.Background()
-	testDB, cleanup := tsqlp.New(ctx, t, psqltest.NewDefaultConnector(ctx))
+	testDB, cleanup := tsqlp.New(ctx, t, psqltest.NewDefaultConnector(ctx, psqltest.BindToLocalHost(true)))
 	defer cleanup()
 	var err error
 	db, err = gorm.Open(postgres.Open(testDB.DataSourceName()), &gorm.Config{})

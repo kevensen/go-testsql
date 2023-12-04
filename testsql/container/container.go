@@ -52,7 +52,7 @@ func ContainerExists(ctx context.Context, cli *client.Client, containerName stri
 	return "", nil
 }
 
-func StartContainer(ctx context.Context, cli *client.Client, config *container.Config, imageName, containerName string) (string, error) {
+func StartContainer(ctx context.Context, cli *client.Client, config *container.Config, hostConfig *container.HostConfig, imageName, containerName string) (string, error) {
 	reader, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		return "", err
@@ -63,7 +63,7 @@ func StartContainer(ctx context.Context, cli *client.Client, config *container.C
 	containerID, err := ContainerExists(ctx, cli, containerName)
 	var cee *ContainerExistsError
 	if err == nil {
-		resp, err := cli.ContainerCreate(ctx, config, nil, nil, nil, containerName)
+		resp, err := cli.ContainerCreate(ctx, config, hostConfig, nil, nil, containerName)
 		if err != nil {
 			return "", err
 		}
