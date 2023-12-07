@@ -60,10 +60,11 @@ func NewDefaultConnector(ctx context.Context, opts ...PostgresOptions) *Connecto
 }
 
 func (c *Connector) ContainerConfig() *container.Config {
+	port := nat.Port(strconv.FormatInt(int64(c.port), 10)) + "/tcp"
 	return &container.Config{
 		Image:        c.containerImage,
 		Tty:          false,
-		ExposedPorts: nat.PortSet{nat.Port(strconv.FormatInt(int64(c.port), 10)): struct{}{}},
+		ExposedPorts: nat.PortSet{port: struct{}{}},
 		Env:          []string{"POSTGRES_PASSWORD=" + c.databasePassword, "POSTGRES_USER=" + c.databaseUser, "POSTGRES_DB=" + c.databaseName},
 	}
 }

@@ -84,5 +84,10 @@ func ContainerIP(ctx context.Context, cli *client.Client, containerID string) (s
 	if err != nil {
 		return "", err
 	}
+
+	if resp.HostConfig.PortBindings != nil && len(resp.HostConfig.PortBindings) > 0 {
+		return "localhost", nil
+	}
+
 	return resp.NetworkSettings.IPAddress, nil
 }
