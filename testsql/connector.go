@@ -53,25 +53,23 @@ func New(ctx context.Context, t *testing.T, dbConn Database) (*TestConnector, fu
 	}
 
 	operation := func() error {
+		options := types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true}
+		out, err := cli.ContainerLogs(ctx, containerID, options)
+		if err != nil {
+			return fmt.Errorf("log error: %v", err)
+		}
+		buf := new(strings.Builder)
+		n, err := io.Copy(buf, out)
+		if err != nil {
+			return fmt.Errorf("io copy error %v", err)
+		}
+		fmt.Printf("BYTES READ FROM LOG: %d", n)
+		fmt.Println("CONTAINER LOGS =>" + buf.String())
 		return testConnection(testConn.host, dbConn.Port()) // or an error
 	}
 
 	err = backoff.Retry(operation, backoff.NewExponentialBackOff())
 	if err != nil {
-		options := types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true}
-		out, err2 := cli.ContainerLogs(ctx, containerID, options)
-		if err2 != nil {
-			fmt.Printf("log error: %v; connection error %v", err2, err)
-			t.Fatal(fmt.Errorf("log error: %v; connection error %v", err2, err))
-
-		}
-		buf := new(strings.Builder)
-		n, err := io.Copy(buf, out)
-		if err != nil {
-			t.Fatalf("IO COPY ERROR: %v", err)
-		}
-		fmt.Printf("BYTES READ FROM LOG: %d", n)
-		fmt.Println("CONTAINER LOGS =>" + buf.String())
 
 		t.Fatal(err)
 	}
