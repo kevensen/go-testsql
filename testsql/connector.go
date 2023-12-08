@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"os"
+	"strings"
 	"testing"
 
 	tsqlcon "github.com/kevensen/go-testsql/testsql/container"
@@ -61,9 +61,18 @@ func New(ctx context.Context, t *testing.T, dbConn Database) (*TestConnector, fu
 		options := types.ContainerLogsOptions{ShowStdout: true, ShowStderr: true}
 		out, err2 := cli.ContainerLogs(ctx, containerID, options)
 		if err2 != nil {
+			fmt.Printf("log error: %v; connection error %v", err2, err)
 			t.Fatal(fmt.Errorf("log error: %v; connection error %v", err2, err))
+
 		}
-		io.Copy(os.Stdout, out)
+		buf := new(strings.Builder)
+		n, err := io.Copy(buf, out)
+		if err != nil {
+			t.Fatalf("IO COPY ERROR: %v", err)
+		}
+		fmt.Printf("BYTES READ FROM LOG: %d", n)
+		fmt.Println("CONTAINER LOGS =>" + buf.String())
+
 		t.Fatal(err)
 	}
 
@@ -86,6 +95,7 @@ func testConnection(host string, port int) error {
 	endpoint := fmt.Sprintf("%s:%d", host, port)
 	conn, err := net.Dial("tcp", endpoint)
 	if err != nil {
+		fmt.Printf("connection test failed to %q: %v\n", endpoint, err)
 		return fmt.Errorf("connection test failed to %q: %v", endpoint, err)
 
 	}
