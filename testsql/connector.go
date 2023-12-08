@@ -5,10 +5,13 @@ package testsql
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
+	"os"
 	"testing"
 
 	tsqlcon "github.com/kevensen/go-testsql/testsql/container"
+	"github.com/ory/dockertest/docker/types"
 
 	"github.com/cenkalti/backoff"
 	"github.com/docker/docker/api/types/container"
@@ -55,6 +58,12 @@ func New(ctx context.Context, t *testing.T, dbConn Database) (*TestConnector, fu
 
 	err = backoff.Retry(operation, backoff.NewExponentialBackOff())
 	if err != nil {
+		options := types.ContainerLogsOptions{ShowStdout: true, ShowStdErr: true}
+		out, err2 := cli.ContainerLogs(ctx, containerID, options)
+		if err2 != nil {
+			t.Fatal(fmt.Errorf("log error: %v; connection error %v", err2, err))
+		}
+		io.Copy(os.Stdout, out)
 		t.Fatal(err)
 	}
 
