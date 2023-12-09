@@ -6,9 +6,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/go-connections/nat"
 )
 
 const (
@@ -29,14 +26,9 @@ type Connector struct {
 	additionalArgs   map[string]string
 	containerImage   string
 	containerName    string
-	localhost        bool
 }
 
-type PostgresOptions interface{}
-
-type BindToLocalHost bool
-
-func NewDefaultConnector(ctx context.Context, opts ...PostgresOptions) *Connector {
+func NewDefaultConnector(ctx context.Context) *Connector {
 	c := &Connector{
 		port:             defaultPort,
 		databaseName:     defaultDB,
@@ -49,41 +41,7 @@ func NewDefaultConnector(ctx context.Context, opts ...PostgresOptions) *Connecto
 		},
 	}
 
-	for _, opt := range opts {
-		switch v := opt.(type) {
-		case BindToLocalHost:
-			c.localhost = bool(v)
-		}
-	}
-
 	return c
-}
-
-func (c *Connector) ContainerConfig() *container.Config {
-	port := nat.Port(strconv.FormatInt(int64(c.port), 10)) + "/tcp"
-	return &container.Config{
-		Image:        c.containerImage,
-		Tty:          false,
-		ExposedPorts: nat.PortSet{port: struct{}{}},
-		Env:          []string{"POSTGRES_PASSWORD=" + c.databasePassword, "POSTGRES_USER=" + c.databaseUser, "POSTGRES_DB=" + c.databaseName},
-	}
-}
-
-func (c *Connector) HostConfig() *container.HostConfig {
-
-	if c.localhost {
-		return &container.HostConfig{
-			PortBindings: nat.PortMap{
-				"5432/tcp": []nat.PortBinding{
-					{
-						HostIP:   "127.0.0.1",
-						HostPort: "5432",
-					},
-				},
-			},
-		}
-	}
-	return nil
 }
 
 // DataSourceName returns the data source name expected by https://github.com/jackc/pgx
@@ -105,4 +63,12 @@ func (c *Connector) ContainerImage() string {
 
 func (c *Connector) Port() int {
 	return c.port
+}
+
+func (c *Connector) PortWithProtocol() string {
+	return strconv.FormatInt(int64(c.port), 10) + "/tcp"
+}
+
+func (c *Connector) Env() []string {
+	return []string{"POSTGRES_PASSWORD=" + c.databasePassword, "POSTGRES_USER=" + c.databaseUser, "POSTGRES_DB=" + c.databaseName}
 }
